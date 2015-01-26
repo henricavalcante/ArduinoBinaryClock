@@ -9,7 +9,7 @@ volatile int segundo = 0;
 volatile int minuto = 0;
 volatile int hora = 0;
 
-int* arrTimePointers[] = {&segundo, &minuto, &hora};
+int* arrTimePointers[] = {&hora, &minuto, &segundo};
 
 
 void init(){
