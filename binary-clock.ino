@@ -3,13 +3,13 @@
 #include <avr/interrupt.h>
 
 volatile int ledStates[4][6];//matrix representing states of leds on clock
-
 //incremented vars on each interrupt event
+
 volatile int segundo = 0;
 volatile int minuto = 0;
 volatile int hora = 0;
 
-int* arrTimePointers[] = {&hora, &minuto, &segundo};
+volatile int* arrTimePointers[3] = {&hora, &minuto, &segundo};
 
 
 void init(){
@@ -19,7 +19,7 @@ void init(){
   PORTB = 0x00;
   for(int i=0; i<4 ;i++){
     for(int j=0; j<6; j++){
-      ledStates[i][j] = 0;
+      ledStates[i][j] = 0                                     ;
     }
   }
 }
@@ -43,10 +43,10 @@ void initTimer1(){
 }
 
 void updateScreen(){
-  int decimal; = hora/10;
-  int unit; = hora%10;
+  int decimal;
+  int unit;
   int i,j,k;
-  for(k=0; i<6; i +=2){
+  for(k=0; k<6; k +=2){
     decimal = *(arrTimePointers[k/2])/10;
     unit = *(arrTimePointers[k/2])%10;
     for(i=3; i>=1; i--){
@@ -59,25 +59,24 @@ void updateScreen(){
     }
 
   }
-  
 }
 
 int main(){
   init();
   initTimer1();
+  
   while(1){
   updateScreen();
     for(int i=0;i<4;i++){
       PORTB = 0x00;
       PORTB |= (1 << i);
-      for(int j=0;j<6;j++){
+      for(int j=2;j<8;j++){
         PORTD = 0x00;
-        if(ledStates[i][j] == 1)
-          PORTD |= (1 << (j+2));
+         PORTD |= (ledStates[i][j-2] << j);
+         _delay_ms(0.7);
       }
     }
   }
-
 }
 
 /*
@@ -89,11 +88,11 @@ ISR(TIMER1_OVF_vect){
   TCNT1L = 0xF6;
   //------------------------
   //Handler time.
+  segundo = (segundo + 1) % 60;
   if(segundo%60 == 0){
+    minuto = (minuto + 1) % 60;
     if(minuto % 60 == 0){
       hora = (hora + 1) % 24;
     }
-    minuto = (minuto + 1) % 60;
   }
-  segundo = (segundo + 1) % 60;
 }
